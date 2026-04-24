@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Codex-Gemini Bridge</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Codex-Gemini Bridge <small>v0.1</small></h1>
+    <p class="status" id="server-status">Connecting to server...</p>
+  </header>
+
+  <main>
+    <section class="card">
+      <label for="task">Task Description</label>
+      <textarea id="task" placeholder="e.g. Create a login form with validation..."></textarea>
+      
+      <div class="controls">
+        <select id="provider">
+          <option value="mock">Mock Provider</option>
+          <option value="gemini">Gemini CLI</option>
+          <option value="ollama">Ollama Cloud</option>
+        </select>
+        <button id="btn-analyze">Analyze</button>
+        <button id="btn-handoff">Create Handoff</button>
+        <button id="btn-review">Review Git Diff</button>
+      </div>
+    </section>
+
+    <section class="card" id="output-card" style="display: none;">
+      <h2 id="output-title">Junior Analysis</h2>
+      <button id="btn-copy" style="float: right;">Copy Prompt</button>
+      <div id="output-content">
+        <pre><code id="output-text"></code></pre>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.env
+.bridge/handoff.json
+.bridge/senior-prompt.md
+.bridge/model-usage.jsonl
+*.log
+.DS_Store
