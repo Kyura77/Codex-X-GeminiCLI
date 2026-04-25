@@ -24,3 +24,8 @@ export async function gitDiffStat(): Promise<string> {
   const result = await runCommand('git', ['diff', '--stat']);
   return result.stdout;
 }
+
+export async function gitDiffCached(): Promise<string> {
+  const result = await runCommand('git', ['diff', '--cached']);
+  return result.stdout;
+}

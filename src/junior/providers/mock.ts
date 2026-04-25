@@ -1,5 +1,6 @@
 import { JuniorProvider } from './registry';
 import { JuniorAnalysis, JuniorDiffReview } from '../../bridge/schema';
+import { ContextPack } from '../../bridge/context-pack';
 
 export class MockProvider implements JuniorProvider {
   name = 'mock';
@@ -8,7 +9,7 @@ export class MockProvider implements JuniorProvider {
     return true;
   }
 
-  async analyzeTask(task: string): Promise<JuniorAnalysis> {
+  async analyzeTask(task: string, contextPack: ContextPack): Promise<JuniorAnalysis> {
     return {
       task_summary: `Mock analysis for: ${task}`,
       bridge_needed: true,

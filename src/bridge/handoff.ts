@@ -1,6 +1,7 @@
 import { JuniorAnalysis, SeniorHandoff, SeniorHandoffSchema } from './schema';
 import { estimateTokens, calculateReduction } from '../utils/token-estimator';
 import { writeSafeFile } from '../utils/fs-safe';
+import { ContextPack } from './context-pack';
 
 export function generateSeniorPrompt(task: string, analysis: JuniorAnalysis): string {
   return `
@@ -56,7 +57,12 @@ Instructions:
 `.trim();
 }
 
-export async function createHandoff(task: string, analysis: JuniorAnalysis, provider: string): Promise<SeniorHandoff> {
+export async function createHandoff(
+  task: string, 
+  analysis: JuniorAnalysis, 
+  provider: string, 
+  contextPack: ContextPack
+): Promise<SeniorHandoff> {
   const seniorPrompt = generateSeniorPrompt(task, analysis);
   
   const handoff: SeniorHandoff = {
@@ -66,11 +72,11 @@ export async function createHandoff(task: string, analysis: JuniorAnalysis, prov
     analysis,
     senior_prompt: seniorPrompt,
     context_reduction: {
-      estimated_original_files: 100, // Placeholder
+      estimated_original_files: contextPack.project_tree_summary.length,
       must_read_count: analysis.must_read_files.length,
       should_read_count: analysis.should_read_files.length,
       maybe_relevant_count: analysis.maybe_relevant_files.length,
-      estimated_reduction_ratio: 0.85 // Placeholder
+      estimated_reduction_ratio: calculateReduction(contextPack.project_tree_summary.length, analysis.must_read_files.length)
     }
   };
 

@@ -1,9 +1,10 @@
 import { JuniorAnalysis, JuniorDiffReview } from '../../bridge/schema';
+import { ContextPack } from '../../bridge/context-pack';
 
 export interface JuniorProvider {
   name: string;
   isAvailable(): Promise<boolean>;
-  analyzeTask(task: string): Promise<JuniorAnalysis>;
+  analyzeTask(task: string, contextPack: ContextPack): Promise<JuniorAnalysis>;
   reviewFiles(task: string, files: string[]): Promise<any>; // Simplified for MVP
   scaffoldFrontend(description: string): Promise<any>;
   reviewDiff(task: string, diff: string): Promise<JuniorDiffReview>;

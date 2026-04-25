@@ -2,6 +2,7 @@ import { ProviderRegistry } from './providers/registry';
 import { MockProvider } from './providers/mock';
 import { GeminiCliProvider } from './providers/gemini-cli';
 import { JuniorAnalysis, JuniorDiffReview } from '../bridge/schema';
+import { ContextPack } from '../bridge/context-pack';
 
 export class JuniorEngine {
   private registry: ProviderRegistry;
@@ -12,9 +13,9 @@ export class JuniorEngine {
     this.registry.register(new GeminiCliProvider());
   }
 
-  async analyzeTask(task: string, providerName: string = 'mock'): Promise<JuniorAnalysis> {
+  async analyzeTask(task: string, contextPack: ContextPack, providerName: string = 'mock'): Promise<JuniorAnalysis> {
     const provider = this.registry.getProvider(providerName);
-    return await provider.analyzeTask(task);
+    return await provider.analyzeTask(task, contextPack);
   }
 
   async reviewDiff(task: string, diff: string, providerName: string = 'mock'): Promise<JuniorDiffReview> {
