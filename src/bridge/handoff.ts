@@ -71,6 +71,7 @@ export async function createHandoff(
     junior_provider: provider,
     analysis,
     senior_prompt: seniorPrompt,
+    context_pack: contextPack,
     context_reduction: {
       estimated_original_files: contextPack.project_tree_summary.length,
       must_read_count: analysis.must_read_files.length,

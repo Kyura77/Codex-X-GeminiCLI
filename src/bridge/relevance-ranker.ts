@@ -1,3 +1,4 @@
+import path from 'path';
 import { FileMetadata } from './project-inventory';
 import { ProjectStack } from './stack-detector';
 import { ImportGraph } from './import-graph';
@@ -15,7 +16,8 @@ export function rankRelevantFiles(
   stack: ProjectStack, 
   graph: ImportGraph
 ): RankedFile[] {
-  const keywords = task.toLowerCase().split(/\W+/).filter(k => k.length > 2);
+  const taskLower = task.toLowerCase();
+  const keywords = taskLower.split(/\W+/).filter(k => k.length > 2);
   const ranked: RankedFile[] = [];
 
   for (const file of files) {
@@ -23,13 +25,14 @@ export function rankRelevantFiles(
 
     let score = 0;
     const reasons: string[] = [];
-    const fileName = file.path.toLowerCase();
+    const filePath = file.path.toLowerCase();
+    const fileName = path.basename(file.path).toLowerCase();
 
-    // 1. Filename match (20%)
-    const fileNameMatches = keywords.filter(k => fileName.includes(k));
-    if (fileNameMatches.length > 0) {
-      score += 0.2 * (fileNameMatches.length / keywords.length);
-      reasons.push(`Filename matches keywords: ${fileNameMatches.join(', ')}`);
+    // 1. Filename/Path match (20%)
+    const pathMatches = keywords.filter(k => filePath.includes(k));
+    if (pathMatches.length > 0) {
+      score += 0.2 * (pathMatches.length / keywords.length);
+      reasons.push(`Path matches keywords: ${pathMatches.join(', ')}`);
     }
 
     // 2. Entrypoint distance (20%)
@@ -38,19 +41,25 @@ export function rankRelevantFiles(
       reasons.push('Is a project entry point');
     }
 
-    // 3. Stack-based boosts
-    if (task.toLowerCase().includes('server') && file.path.includes('server')) {
+    // 3. Category Boosts (Specialized)
+    if (file.kind === 'config' && keywords.some(k => ['config', 'env', 'build', 'model', 'provider'].includes(k))) {
       score += 0.15;
-      reasons.push('Task mentions server and file is server-related');
+      reasons.push('Config file relevant to task');
     }
-    if (task.toLowerCase().includes('ui') || task.toLowerCase().includes('frontend')) {
-      if (file.kind === 'style' || file.path.includes('public') || file.path.includes('component')) {
-        score += 0.15;
-        reasons.push('Task mentions UI/Frontend and file is UI-related');
-      }
+    if (file.kind === 'style' && keywords.some(k => ['ui', 'frontend', 'css', 'style', 'dashboard'].includes(k))) {
+      score += 0.15;
+      reasons.push('UI/Style file relevant to task');
+    }
+    if (filePath.includes('provider') && keywords.some(k => ['gemini', 'ollama', 'model', 'router'].includes(k))) {
+      score += 0.2;
+      reasons.push('Provider file relevant to model task');
+    }
+    if (filePath.includes('schema') && keywords.some(k => ['json', 'validation', 'zod', 'handoff'].includes(k))) {
+      score += 0.15;
+      reasons.push('Schema file relevant to data task');
     }
 
-    // 4. Import graph centrality (25%) - simplified
+    // 4. Import graph centrality (25%)
     const dependents = Object.values(graph).filter(deps => deps.includes(file.path)).length;
     if (dependents > 0) {
       score += Math.min(0.25, 0.05 * dependents);

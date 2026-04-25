@@ -50,6 +50,7 @@ export const SeniorHandoffSchema = z.object({
   junior_provider: z.string(),
   analysis: JuniorAnalysisSchema,
   senior_prompt: z.string(),
+  context_pack: z.any().optional(),
   context_reduction: z.object({
     estimated_original_files: z.number(),
     must_read_count: z.number(),
