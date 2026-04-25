@@ -4,17 +4,27 @@ import { buildProjectContextMap } from './context-map';
 import { buildContextPack } from './context-pack';
 import { gitDiff, isGitRepo, gitDiffStat, gitDiffNameOnly } from '../utils/git';
 import { logger } from '../utils/logger';
+import { WorkspaceManager } from '../workspace/workspace-manager';
 
 export class BridgeOrchestrator {
   private junior: JuniorEngine;
+  private workspaceManager: WorkspaceManager;
 
   constructor() {
     this.junior = new JuniorEngine();
+    this.workspaceManager = new WorkspaceManager();
+    this.workspaceManager.load();
   }
 
-  async runAnalysis(task: string, provider: string) {
-    logger.info(`Starting context mapping for task: ${task}`);
-    const contextMap = await buildProjectContextMap(task);
+  getWorkspaces() { return this.workspaceManager; }
+
+  async runAnalysis(task: string, provider: string, workspaceId?: string) {
+    if (workspaceId) await this.workspaceManager.selectWorkspace(workspaceId);
+    const ws = this.workspaceManager.getCurrentWorkspace();
+    const rootDir = ws ? ws.root_path : process.cwd();
+
+    logger.info(`Starting context mapping for task: ${task} in ${rootDir}`);
+    const contextMap = await buildProjectContextMap(task, rootDir);
     const contextPack = buildContextPack(contextMap);
     
     logger.info(`Sending context pack to ${provider}`);
@@ -22,13 +32,17 @@ export class BridgeOrchestrator {
     return { analysis, contextPack };
   }
 
-  async runHandoff(task: string, provider: string) {
-    const { analysis, contextPack } = await this.runAnalysis(task, provider);
+  async runHandoff(task: string, provider: string, workspaceId?: string) {
+    const { analysis, contextPack } = await this.runAnalysis(task, provider, workspaceId);
     const handoff = await createHandoff(task, analysis, provider, contextPack);
     return handoff;
   }
 
-  async runReviewDiff(task: string, provider: string) {
+  async runReviewDiff(task: string, provider: string, workspaceId?: string) {
+    if (workspaceId) await this.workspaceManager.selectWorkspace(workspaceId);
+    const ws = this.workspaceManager.getCurrentWorkspace();
+    const rootDir = ws ? ws.root_path : process.cwd();
+
     if (!await isGitRepo()) {
       throw new Error('Not a git repository. Cannot review diff.');
     }
@@ -57,11 +71,15 @@ ${diff.slice(0, 20000)} // Truncate safely
   }
 
   async getHealth() {
+    const isGit = await isGitRepo();
+    const ws = this.workspaceManager.getCurrentWorkspace();
     return {
       status: 'healthy',
       junior: await this.junior.getHealth(),
       cwd: process.cwd(),
-      isGit: await isGitRepo()
+      isGit,
+      workspace: ws ? { id: ws.id, name: ws.name, path: ws.root_path } : null,
+      totalWorkspaces: this.workspaceManager.listWorkspaces().length
     };
   }
 }

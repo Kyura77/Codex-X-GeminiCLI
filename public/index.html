@@ -12,7 +12,20 @@
     <p class="status" id="server-status">Connecting to server...</p>
   </header>
 
-  <main>
+    <section class="card">
+      <h2>Workspace Management</h2>
+      <div class="controls">
+        <select id="workspace-select">
+          <option value="">No Workspace Selected</option>
+        </select>
+        <button id="btn-refresh-workspaces">Refresh</button>
+      </div>
+      <div class="controls" style="margin-top: 10px;">
+        <input type="text" id="new-workspace-path" placeholder="C:\Path\To\Project" style="flex-grow: 1; background: #0f172a; color: white; border: 1px solid #334155; padding: 0.5rem; border-radius: 4px;">
+        <button id="btn-add-workspace">Add Project</button>
+      </div>
+    </section>
+
     <section class="card">
       <label for="task">Task Description</label>
       <textarea id="task" placeholder="e.g. Create a login form with validation..."></textarea>

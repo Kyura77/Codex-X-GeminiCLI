@@ -13,9 +13,8 @@ export interface ProjectContextMap {
   task?: string;
 }
 
-export async function buildProjectContextMap(task?: string): Promise<ProjectContextMap> {
-  const inventory = await buildProjectInventory();
-  const rootDir = process.cwd();
+export async function buildProjectContextMap(task?: string, rootDir: string = process.cwd()): Promise<ProjectContextMap> {
+  const inventory = await buildProjectInventory(rootDir);
   const stack = await detectProjectStack(inventory.files, rootDir);
   const importGraph = await buildImportGraph(inventory.files, rootDir);
   const rankedFiles = task ? rankRelevantFiles(task, inventory.files, stack, importGraph) : [];
